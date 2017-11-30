@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>回调函数</title>
+</head>
+<body>
+<script src="./plugins/jquery-3.2.1.min.js"></script>
+<script>
+    /*自己写一个回调函数，就是明白到底什么是回调函数了*/
+
+    /*1：同步回调函数*/
+    function getNodes(paras, callback) {
+        var json = JSON.stringify(paras);
+        typeof(callback) === "function" && callback(json);
+    }
+    /*就像这个函数,其实回调函数里已经把你传进的第一个参数进行了处理，并把处理得到的结果，传进了callback（第二个参数，一般是函数）。
+     * 但是callback一般都没写内容，只是被传进了处理好的一个结果。函数内容是你来写的，这时你可以按意愿用前面那个结果做一些事情*/
+    getNodes({name: "小名", sex: "MAN"}, function (a) {
+        console.log(a);
+        /*用该json干很多很多事情*/
+    });
+
+    /*2：异步回调函数*/
+    /*跟上面一样，Jquery已经将从接口获取数据这个过程处理完了，然后把拿到的数据传给callback让你直接用*/
+    $.post("url", function (data) {
+        //用data渲染模板
+    });
+</script>
+</body>
+</html>
