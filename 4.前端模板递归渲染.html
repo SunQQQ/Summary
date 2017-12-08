@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!--路由表格列表 自定义模板 by SQ-->
+<script id="SortManage" type="text/html">
+    {{#
+        var Marks = function(n){
+            var str = "";
+            for(var i=0;i<n;i++){
+                str = str + " |---- ";
+            }
+            return str;
+        };
+    }}
+    <tr>
+        <td style="padding-top:5px;padding-bottom:5px">
+            <div class="layui-table-cell laytable-cell-1-Id">{{ d.UUID }}</div>
+        </td>
+        <td style="padding-top:5px;padding-bottom:5px">
+            {{# if(d.Level==1){ }}
+            <div class="layui-table-cell laytable-cell-1-SortName">{{ d.Module }}</div>
+            {{# } else { }}
+            <div class="layui-table-cell laytable-cell-1-SortName">{{Marks(d.Level-1)}} {{ d.Module }}</div>
+            {{# } }}
+        </td>
+        <td style="padding-top:5px;padding-bottom:5px">
+            <div class="layui-table-cell laytable-cell-1-SortStatus">{{ d.Controller }}</div>
+        </td>
+        <td style="padding-top:5px;padding-bottom:5px">
+            <div class="layui-table-cell laytable-cell-1-SortStatus">{{ d.Action }}</div>
+        </td>
+        <td align="center" style="padding-top:5px;padding-bottom:5px">
+            <button type="button" onclick="Edit('{{d.UUID}}')" class="layui-btn layui-btn-mini">编辑</button>
+            <button type="button" onClick="Del('{{d.UUID}}')" class="layui-btn layui-btn-mini layui-btn-danger">删除</button>
+        </td>
+    </tr>
+</script>
+
+<script>
+    $.ajax(
+        {
+            url:"http://console.aowsp.com/Access-GatewaysReadJSON",
+            success:function (TableData) {
+                var TableDataObject = JSON.parse(TableData);
+                SQRecursionTr(TableDataObject);
+            },
+            type:"post"
+        }
+    );
+
+    /*用递归函数，渲染分类管理树列表 by SQ*/
+    function SQRecursionTr(List) {
+        for(var i=0;i<List.length;i++){
+            laytpl($("#SortManage").html()).render(List[i],function (html) {
+                $("#TableBody").append(html);
+            })
+            /*如果有child，递归*/
+            if(List[i].Child){
+                if(List[i].Child.length != 0){
+                    SQRecursionTr(List[i].Child);
+                }
+            }
+
+        }
+    }
+</script>
+</body>
+</html>
