@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+过滤掉字符串中的-|以及空字符
+<script>
+	var a = {name:'  |---- 职能'};
+	console.log(a);
+	a.name = a.name.replace(/[-|\s]/g,"");
+</script>
+</body>
+</html>
