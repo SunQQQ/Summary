@@ -19,8 +19,13 @@
 		$("#FlatsEditTpl").html();
 		FlatsEditTpl.innerHTML;
 	</script>
-	3.获取浏览器高度
+	3.
+	获取浏览器高度
 	$(window).height();
+	4.
+	设置Select的某个option选中状态,一下两句皆可
+	$("#MySelect option[value = "+seleOption+"]").attr("selected","selected");
+	$("#SelectInEdit").val(TagTrData.Parent);
 </div>
 </body>
 </html>
