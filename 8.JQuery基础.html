@@ -28,8 +28,170 @@
 	$("#SelectInEdit").val(TagTrData.Parent);
 	5.
 	jq设置父级元素的兄弟元素的子元素的input选中
-	jq添加父级元素的兄弟元素的子元素的div的class
+	jq添加父级元素的兄弟元素的子元素的div的class,如果有就不追加了，如果没有就追加上    角色管理
+	6.
+	循环
+	7.修改文本内容
+	document.getElementById("*").innerHtml = "凉了";
+	$("#id").text("发烫");
 
+
+
+
+	<script>
+		/*找出已选中项*/
+		$.ajax({
+			url: "<{SPURL c = 'Access' a = 'FlatTagsRead' SPSubmit=''}>",
+			data: {
+				Form: {UUID: TagTrData.UUID}
+			},
+			success: function (data) {
+				console.log("后端返回" + data);
+				data = JSON.parse(data);
+				if (data.Status == "1") {
+					console.log();
+				} else if (data.Status == "0") {
+					layer.msg("data");
+				}
+			}
+		});
+
+		var API = JSON.parse('<{$GatewaysJSON}>'.replace(/&quot;/g,'"'));
+		var Marks = function(n){
+			var str = "";
+			for(var i=0;i<n;i++){
+				str = str + " |---- ";
+			}
+			return str;
+		};
+		//处理数据，添加标记
+		var Total = [],Sum = 0;
+		function AddLevel(Array,Level = 0){
+			for(var Key in Array){
+				Array[Key].Level = Level;
+				if(0 != Array[Key].Level){
+					Array[Key].CnName = Marks(Array[Key].Level) + Array[Key].CnName;
+				}
+				Total[Sum] = Array[Key];
+				Sum = Sum + 1;
+				if(Array[Key].Children){
+					var Chindren = Array[Key].Children;
+					if(Object.keys(Chindren).length){
+						AddLevel(Chindren,Level + 1);
+					}
+				}
+			}
+			return Total;
+		}
+		var GatewayJSONObject = AddLevel(API);
+	</script>
 </div>
 </body>
 </html>
+
+
+<!--固定DOM结构-->
+<div class="kit-table">
+	<div class="layui-form">
+		<div style="padding:15px 0 0 10px">
+			<div class="layui-form-item">
+				<div class="layui-form-item">
+					<div class="layui-input-inline">
+						<button class="layui-btn layui-btn-normal" id="RefreshGateWay">更新网关</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<table class="GatewayList" id="GatewayList" lay-filter="GatewayList"></table>
+</div>
+<!--工具条-->
+<script type="text/html" id="GatewayBar">
+	<a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="GatewayEditBar">编辑</a>
+	{{#if(d.Status == 1){}}
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="GatewayForbidBar">禁用</a>
+	{{#}}}
+	{{#if(d.Status == 0){}}
+	<a class="layui-btn layui-btn-xs" lay-event="GatewayForbidBar">激活</a>
+	{{#}}}
+	<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="GatewayWidgetBar">控件</a>
+</script>
+<!--修改 模板-->
+<script type="text/html" id="GatewayEditTpl">
+	<div class="layui-form" style="margin:10px" lay-filter="GatewayAddForm">
+		<div class="layui-form-item" style="display:none">
+			<label class="layui-form-label">识别码</label>
+			<div class="layui-input-block">
+				<input type="text" name="UUID" value="{{d.UUID}}" class="layui-input" placeholder="请输入网关名称" lay-verify="required" required>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">网关名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="CnName" value="{{d.CnName}}" class="layui-input" placeholder="请输入网关名称" lay-verify="required" required>
+			</div>
+		</div>
+		<div class="layui-form-item" style="display:none;">
+			<div class="layui-input-block">
+				<button type="submit" name="SPSubmit" class="layui-btn" lay-submit lay-filter="FormEdit">修 改
+				</button>
+			</div>
+		</div>
+	</div>
+</script>
+<!--控件 模板-->
+<script type="text/html" id="GatewayWightTpl">
+	<table class="GatewayWidgetTable" id="GatewayWidgetTable" lay-filter="GatewayWidgetTable"></table>
+</script>
+<script>
+	var GatewaysAPI = JSON.parse('<{$GatewayJSON}>'.replace(/&quot;/g,'"')).Gateways;
+
+	function AddLevel(Array,Level = 0,TotalS = [],SumS = 0){
+		var Total = TotalS,Sum = SumS;
+		for(var Key in Array){
+			Array[Key].Level = Level;
+			if(0 != Array[Key].Level){
+				Array[Key].CnName = Marks(Array[Key].Level) + Array[Key].CnName;
+			}
+			Total[Sum] = Array[Key];
+			Sum = Sum + 1;
+			if(Array[Key].Children){
+				var Chindren = Array[Key].Children;
+				if(Object.keys(Chindren).length){
+					AddLevel(Chindren,Level + 1,Total,Sum);
+				}
+			}
+		}
+		return Total;
+	}
+
+	console.log(GatewaysAPI);
+	var Marks = function(n){
+		var str = "";
+		for(var i=0;i<n;i++){
+			str = str + " |---- ";
+		}
+		return str;
+	};
+	//处理数据，添加标记
+	var Total = [],Sum = 0;
+	function AddLevel(Array,Level = 0){
+		for(var Key in Array){
+			Array[Key].Level = Level;
+			if(0 != Array[Key].Level){
+				Array[Key].CnName = Marks(Array[Key].Level) + Array[Key].CnName;
+			}
+			Total[Sum] = Array[Key];
+			Sum = Sum + 1;
+			if(Array[Key].Children){
+				var Chindren = Array[Key].Children;
+				if(Object.keys(Chindren).length){
+					AddLevel(Chindren,Level + 1);
+				}
+			}
+		}
+		return Total;
+	}
+	var GatewayJSONObject = AddLevel(GatewaysAPI);
+	console.log(GatewayJSONObject);
+</script>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+<script>
+	var WidgetInRoleData = [
+		{
+			UUID: "lslslslsl",
+			CnName: "搜索按钮"
+		},
+		{
+			UUID: "lslslsfs",
+			CnName: "删除按钮"
+		},
+		{
+			UUID: "lslsoiuoiul",
+			CnName: "搜索输入框"
+		}
+	];
+	var RolesAPI = "";
+
+	var Total = [],Sum = 0;
+	function AddLevel(Array,Level = 0){
+		for(var Key in Array){
+			Array[Key].Level = Level;
+			Array[Key].CnName = Marks(Array[Key].Level) + Array[Key].CnName;
+			Total[Sum] = Array[Key];
+			Sum = Sum + 1;
+			if(Array[Key].Children){
+				var Children = Array[Key].Children;
+				if(Object.keys(Children).length){
+					AddLevel(Children,Level + 1);
+				}
+			}
+		}
+		return Total;
+	}
+	var GatewayInRoleData = AddLevel(RolesAPI.Gateways);
+
+	var RoleJSONObject = data.Data;
+	//角色选择下拉框 初始化数据
+	RoleTpl($("#RoleFatherSelectTpl").html()).render(RoleJSONObject, function (html) {
+		$("#RoleSelect").append(html);
+		form.render('select');
+	});
+
+	table.on('tool(RoleList)', function (obj) {
+		var layEvent = obj.event,
+			UUID = obj.data.UUID;
+		if (layEvent === 'RoleForbidBar') {
+			var NewStatus, that = this;
+			if (obj.data.Status == 0) {
+				NewStatus = 1;
+			} else if (obj.data.Status == 1) {
+				NewStatus = 0;
+			}
+			$.ajax({
+				url: "<{SPURL c = 'Access' a = 'RoleUpdate' SPSubmit=''}>",
+				data: {
+					Form: {UUID: UUID, Status: NewStatus}
+				},
+				success: function (data) {
+					console.log("后端返回" + data);
+					data = JSON.parse(data);
+					if (data.Status == "1") {
+						obj.update({
+							Status: NewStatus
+						});
+						if (NewStatus == 0) {
+							$(that).html("激活");
+							$(that).removeClass("layui-btn-danger");
+							layer.msg("禁用成功");
+						} else if (NewStatus == 1) {
+							$(that).html("禁用");
+							$(that).addClass("layui-btn-danger");
+							layer.msg("激活成功");
+						}
+					} else if (data.Status == "0") {
+						layer.msg("后端操作失败");
+					} else {
+						layer.msg("状态码不识别");
+					}
+				}
+			});
+		} else if (layEvent === 'RoleEditBar') {
+			var RoleTrData = '';
+			for (var i = 0; i < RoleJSONObject.length; i++) {
+				if (UUID == RoleJSONObject[i].UUID) {
+					RoleTrData = RoleJSONObject[i];
+					RoleTrData.CnName = RoleTrData.CnName.replace(/[-|\s]/g, "");
+				}
+			}
+			RoleTpl($("#RoleEditTpl").html()).render(RoleTrData, function (html) {
+				layer.open({
+					type: 1,
+					title: '修改角色',
+					content: html,
+					area: ['50%', '50%'],
+					btn: ['提交', '取消'],
+					yes: function (index, layero) {
+						form.on('submit(FormEdit)', function (data) {
+							$.ajax({
+								url: "<{SPURL c = 'Access' a = 'RoleUpdate' SPSubmit=''}>",
+								data: {
+									Form: data.field
+								},
+								type: "POST",
+								success: function (data) {
+									console.log("后台返回" + data);
+									data = JSON.parse(data);
+									if (data.Status == "1") {
+										console.log(RoleTableIns);
+										$("#CurrentTabRefresh").click();
+										$('.kit-tab-tool').click();
+										layer.msg("编辑成功");
+									} else if (data.Status == "0") {
+										layer.msg(data.Data);
+									} else {
+										layer.msg("状态码不识别");
+									}
+								}
+							});
+							layer.close(index);
+						});
+						$('div[lay-filter="RoleAddForm"]').find('button[lay-submit]').click();
+					},
+					success: function () {
+						form.render(null, 'RoleAddForm');
+						RoleTpl($("#RoleSelfSelectTpl").html()).render(RoleJSONObject, function (html) {
+							$("#SelectInEdit").append(html);
+							form.render('select');
+						});
+						$("#SelectInEdit").val(RoleTrData.Parent);
+						form.render('select');
+					}
+				});
+			});
+		} else if (layEvent === 'RolePowerBar') {
+			var GateTableData = GatewayInRoleData;
+			RoleTpl($("#GatewayInRoleTpl").html()).render({}, function (html) {
+				var PowerSecord;
+				var WidgetLayer = layer.open({
+					type: 1,
+					title: '选择权限',
+					content: html,
+					area: ['80%', '75%'],
+					btn: ['提交', '取消'],
+					yes: function (index, layero) {
+						var PowerFirst = table.checkStatus('GatewayTableInRoleId').data;
+						console.log("提交");
+						console.log(PowerFirst);
+						console.log(PowerSecord);
+						for(var a in GateTableData){
+							GateTableData[a].LAY_CHECKED = false;
+						}
+						layer.close(WidgetLayer);
+					},
+					btn2:function () {
+						for(var a in GateTableData){
+							GateTableData[a].LAY_CHECKED = false;
+						}
+					},
+					cancel:function () {
+						for(var a in GateTableData){
+							GateTableData[a].LAY_CHECKED = false;
+						}
+					},
+					success: function () {
+						var GatewayInRoleTableIns = table.render({
+							elem: '#GatewayInRoleTable',
+							data: GateTableData,
+							limit: 30,
+							page: true,
+							height: 500,
+							cols: [[
+								{checkbox: true},
+								{field: 'UUID', title: '识别码'},
+								{field: 'CnName', title: '名称'},
+								{field: 'Module', title: '模块'},
+								{field: 'Controller', title: '控制器'},
+								{field: 'Action', title: '方法'},
+								{fixed: 'right', title: "操作", toolbar: '#GatewayInRoleBar'}
+							]],
+							id: "GatewayTableInRoleId"
+						});
+						table.on('tool(GatewayInRoleTable)', function (obj) {
+							var layEvent = obj.event,
+								UUID = obj.data.UUID;
+							if (layEvent === 'WidgetInRoleBar') {
+								var WidgetData = WidgetInRoleData;
+								//点击权限时，选中该行的Checkbox(操作DOM)
+								var SelectedTd = $(this).parent().parent().parent().children('td')[0];
+								$(SelectedTd).children().children('div').addClass("layui-form-checked");
+
+								for(f in GateTableData){
+									if(UUID == GateTableData[f].UUID){
+										GateTableData[f].LAY_CHECKED = true;
+										console.log("选中一次");
+									}
+								}
+								console.log(GateTableData);
+
+								RoleTpl($("#GateWigInRoleTpl").html()).render({}, function (html) {
+									var widgetInRoleLayer = layer.open({
+										type: 1,
+										title: '选择控件',
+										content: html,
+										area: ['80%', '75%'],
+										btn: ['提交', '取消'],
+										yes: function (index, layero) {
+											PowerSecord = table.checkStatus('WidgetInRoleId').data;
+											console.log("第二个layer");
+											console.log(PowerSecord);
+											layer.close(widgetInRoleLayer);
+											for(var a in WidgetData){
+												WidgetData[a].LAY_CHECKED = false;
+											}
+										},
+										cancel:function () {
+											for(var a in WidgetData){
+												WidgetData[a].LAY_CHECKED = false;
+											}
+										},
+										btn2:function () {
+											for(var a in WidgetData){
+												WidgetData[a].LAY_CHECKED = false;
+											}
+										},
+										success: function () {
+											table.render({
+												elem: '#WidgetInRoleTable',
+												data: WidgetData,
+												limit: 30,
+												page: true,
+												height: 500,
+												cols: [[
+													{checkbox: true, width: "5%"}
+													, {field: 'UUID', title: '识别码', width: '47%'}
+													, {field: 'CnName', title: '名称', width: '47%'}
+												]],
+												id: "WidgetInRoleId"
+											});
+										}
+									})
+								});
+							}
+						});
+					}
+				});
+			});
+		}
+	});
+	//新增角色
+	form.on('submit(RoleAddFormButton)', function (data) {
+		$.ajax({
+			url: "<{SPURL c = 'Access' a = 'RoleCreat' SPSubmit=''}>",
+			data: data.field,
+			type: "POST",
+			success: function (data) {
+				console.log("后台返回" + data);
+				data = JSON.parse(data);
+				if (data.Status == "1") {
+					layer.msg("新增角色成功");
+					$("#CurrentTabRefresh").click();
+					$('.kit-tab-tool').click();
+				} else if (data.Status == "0") {
+					layer.msg("后端操作失败");
+				} else {
+					layer.msg("状态码不识别");
+				}
+			}
+		});
+		return false;//阻止表单跳转。如果需要表单跳转，去掉这段即可。
+	});
+</script>
+</body>
+</html>
