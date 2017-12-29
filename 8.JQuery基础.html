@@ -34,57 +34,6 @@
 	7.修改文本内容
 	document.getElementById("*").innerHtml = "凉了";
 	$("#id").text("发烫");
-
-
-
-
-	<script>
-		/*找出已选中项*/
-		$.ajax({
-			url: "<{SPURL c = 'Access' a = 'FlatTagsRead' SPSubmit=''}>",
-			data: {
-				Form: {UUID: TagTrData.UUID}
-			},
-			success: function (data) {
-				console.log("后端返回" + data);
-				data = JSON.parse(data);
-				if (data.Status == "1") {
-					console.log();
-				} else if (data.Status == "0") {
-					layer.msg("data");
-				}
-			}
-		});
-
-		var API = JSON.parse('<{$GatewaysJSON}>'.replace(/&quot;/g,'"'));
-		var Marks = function(n){
-			var str = "";
-			for(var i=0;i<n;i++){
-				str = str + " |---- ";
-			}
-			return str;
-		};
-		//处理数据，添加标记
-		var Total = [],Sum = 0;
-		function AddLevel(Array,Level = 0){
-			for(var Key in Array){
-				Array[Key].Level = Level;
-				if(0 != Array[Key].Level){
-					Array[Key].CnName = Marks(Array[Key].Level) + Array[Key].CnName;
-				}
-				Total[Sum] = Array[Key];
-				Sum = Sum + 1;
-				if(Array[Key].Children){
-					var Chindren = Array[Key].Children;
-					if(Object.keys(Chindren).length){
-						AddLevel(Chindren,Level + 1);
-					}
-				}
-			}
-			return Total;
-		}
-		var GatewayJSONObject = AddLevel(API);
-	</script>
 </div>
 </body>
 </html>
@@ -142,56 +91,4 @@
 <!--控件 模板-->
 <script type="text/html" id="GatewayWightTpl">
 	<table class="GatewayWidgetTable" id="GatewayWidgetTable" lay-filter="GatewayWidgetTable"></table>
-</script>
-<script>
-	var GatewaysAPI = JSON.parse('<{$GatewayJSON}>'.replace(/&quot;/g,'"')).Gateways;
-
-	function AddLevel(Array,Level = 0,TotalS = [],SumS = 0){
-		var Total = TotalS,Sum = SumS;
-		for(var Key in Array){
-			Array[Key].Level = Level;
-			if(0 != Array[Key].Level){
-				Array[Key].CnName = Marks(Array[Key].Level) + Array[Key].CnName;
-			}
-			Total[Sum] = Array[Key];
-			Sum = Sum + 1;
-			if(Array[Key].Children){
-				var Chindren = Array[Key].Children;
-				if(Object.keys(Chindren).length){
-					AddLevel(Chindren,Level + 1,Total,Sum);
-				}
-			}
-		}
-		return Total;
-	}
-
-	console.log(GatewaysAPI);
-	var Marks = function(n){
-		var str = "";
-		for(var i=0;i<n;i++){
-			str = str + " |---- ";
-		}
-		return str;
-	};
-	//处理数据，添加标记
-	var Total = [],Sum = 0;
-	function AddLevel(Array,Level = 0){
-		for(var Key in Array){
-			Array[Key].Level = Level;
-			if(0 != Array[Key].Level){
-				Array[Key].CnName = Marks(Array[Key].Level) + Array[Key].CnName;
-			}
-			Total[Sum] = Array[Key];
-			Sum = Sum + 1;
-			if(Array[Key].Children){
-				var Chindren = Array[Key].Children;
-				if(Object.keys(Chindren).length){
-					AddLevel(Chindren,Level + 1);
-				}
-			}
-		}
-		return Total;
-	}
-	var GatewayJSONObject = AddLevel(GatewaysAPI);
-	console.log(GatewayJSONObject);
 </script>
