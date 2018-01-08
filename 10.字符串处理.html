@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+<script>
+	//1.去掉json前面的html代码
+	var Test = "<html><div>gaga</div></html>{status:1,name:'lady'}";
+	var Start = Test.lastIndexOf(">");
+	var End = Test.substr(Start+1);
+	console.log(End);
+</script>
+</body>
+</html>
